@@ -1,0 +1,97 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: code_collab_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: codecollab
+      POSTGRES_PASSWORD: codecollab
+      POSTGRES_DB: codecollab
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codecollab -d codecollab"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: code_collab_redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Optional self-hosted Judge0 (Linux recommended — sandboxing may fail on Windows/WSL2)
+  # Start with: docker compose --profile judge0 up -d
+  # Then set JUDGE0_API_URL=http://localhost:2358 in backend/.env
+  judge0-db:
+    profiles: ["judge0"]
+    image: postgres:16-alpine
+    container_name: code_collab_judge0_db
+    restart: unless-stopped
+    env_file:
+      - ./docker/judge0.conf
+    volumes:
+      - judge0_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U judge0 -d judge0"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  judge0-redis:
+    profiles: ["judge0"]
+    image: redis:7-alpine
+    container_name: code_collab_judge0_redis
+    restart: unless-stopped
+    command: ["sh", "-c", "redis-server --requirepass $$REDIS_PASSWORD"]
+    env_file:
+      - ./docker/judge0.conf
+    healthcheck:
+      test: ["CMD", "sh", "-c", "redis-cli -a $$REDIS_PASSWORD ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  judge0-server:
+    profiles: ["judge0"]
+    image: judge0/judge0:1.13.1
+    container_name: code_collab_judge0_server
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "2358:2358"
+    volumes:
+      - ./docker/judge0.conf:/judge0.conf:ro
+    depends_on:
+      judge0-db:
+        condition: service_healthy
+      judge0-redis:
+        condition: service_healthy
+
+  judge0-workers:
+    profiles: ["judge0"]
+    image: judge0/judge0:1.13.1
+    container_name: code_collab_judge0_workers
+    restart: unless-stopped
+    privileged: true
+    command: ["./scripts/workers"]
+    volumes:
+      - ./docker/judge0.conf:/judge0.conf:ro
+    depends_on:
+      - judge0-server
+
+volumes:
+  postgres_data:
+  redis_data:
+  judge0_postgres_data:

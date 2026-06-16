@@ -1,0 +1,649 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.2
+2 info using node@v22.17.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\code_editor\frontend\.npmrc
+5 silly config load:file:C:\Users\prate\.npmrc
+6 silly config load:file:C:\Users\prate\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install react-router-dom@^6.30.1
+8 verbose argv "install" "react-router-dom@^6.30.1" "--cache" ".\\.npm-cache"
+9 verbose logfile logs-max:10 dir:C:\code_editor\frontend\.npm-cache\_logs\2026-06-16T12_08_40_656Z-
+10 verbose logfile C:\code_editor\frontend\.npm-cache\_logs\2026-06-16T12_08_40_656Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 silly idealTree buildDeps
+14 silly fetch manifest react-router-dom@^6.30.1
+15 silly packumentCache full:https://registry.npmjs.org/react-router-dom cache-miss
+16 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+17 http fetch GET 200 https://registry.npmjs.org/npm 207ms
+18 http fetch GET 200 https://registry.npmjs.org/react-router-dom 175ms (cache miss)
+19 silly packumentCache full:https://registry.npmjs.org/react-router-dom set size:undefined disposed:false
+20 silly fetch manifest react@^18.3.1
+21 silly packumentCache full:https://registry.npmjs.org/react cache-miss
+22 http fetch GET 200 https://registry.npmjs.org/react 365ms (cache miss)
+23 silly packumentCache full:https://registry.npmjs.org/react set size:undefined disposed:false
+24 silly fetch manifest react-dom@^18.3.1
+25 silly packumentCache full:https://registry.npmjs.org/react-dom cache-miss
+26 http fetch GET 200 https://registry.npmjs.org/react-dom 588ms (cache miss)
+27 silly packumentCache full:https://registry.npmjs.org/react-dom set size:undefined disposed:false
+28 silly placeDep ROOT react-router-dom@6.30.4 OK for: code-collab-frontend@0.1.0 want: ^6.30.1
+29 silly fetch manifest react-router@6.30.4
+30 silly packumentCache full:https://registry.npmjs.org/react-router cache-miss
+31 silly fetch manifest @remix-run/router@1.23.3
+32 silly packumentCache full:https://registry.npmjs.org/@remix-run%2frouter cache-miss
+33 http fetch GET 200 https://registry.npmjs.org/react-router 386ms (cache miss)
+34 silly packumentCache full:https://registry.npmjs.org/react-router set size:undefined disposed:false
+35 http fetch GET 200 https://registry.npmjs.org/@remix-run%2frouter 585ms (cache miss)
+36 silly packumentCache full:https://registry.npmjs.org/@remix-run%2frouter set size:undefined disposed:false
+37 silly fetch manifest react@>=16.8
+38 silly packumentCache full:https://registry.npmjs.org/react cache-miss
+39 http cache https://registry.npmjs.org/react 41ms (cache hit)
+40 silly packumentCache full:https://registry.npmjs.org/react set size:6706558 disposed:false
+41 silly placeDep ROOT @remix-run/router@1.23.3 OK for: react-router-dom@6.30.4 want: 1.23.3
+42 silly placeDep ROOT react-router@6.30.4 OK for: react-router-dom@6.30.4 want: 6.30.4
+43 silly reify moves {}
+44 silly audit bulk request {
+44 silly audit   '@alloc/quick-lru': [ '5.2.0' ],
+44 silly audit   '@babel/code-frame': [ '7.29.7' ],
+44 silly audit   '@babel/compat-data': [ '7.29.7' ],
+44 silly audit   '@babel/core': [ '7.29.7' ],
+44 silly audit   '@babel/generator': [ '7.29.7' ],
+44 silly audit   '@babel/helper-compilation-targets': [ '7.29.7' ],
+44 silly audit   '@babel/helper-globals': [ '7.29.7' ],
+44 silly audit   '@babel/helper-module-imports': [ '7.29.7' ],
+44 silly audit   '@babel/helper-module-transforms': [ '7.29.7' ],
+44 silly audit   '@babel/helper-plugin-utils': [ '7.29.7' ],
+44 silly audit   '@babel/helper-string-parser': [ '7.29.7' ],
+44 silly audit   '@babel/helper-validator-identifier': [ '7.29.7' ],
+44 silly audit   '@babel/helper-validator-option': [ '7.29.7' ],
+44 silly audit   '@babel/helpers': [ '7.29.7' ],
+44 silly audit   '@babel/parser': [ '7.29.7' ],
+44 silly audit   '@babel/plugin-transform-react-jsx-self': [ '7.29.7' ],
+44 silly audit   '@babel/plugin-transform-react-jsx-source': [ '7.29.7' ],
+44 silly audit   '@babel/template': [ '7.29.7' ],
+44 silly audit   '@babel/traverse': [ '7.29.7' ],
+44 silly audit   '@babel/types': [ '7.29.7' ],
+44 silly audit   '@esbuild/aix-ppc64': [ '0.25.12' ],
+44 silly audit   '@esbuild/android-arm': [ '0.25.12' ],
+44 silly audit   '@esbuild/android-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/android-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/darwin-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/darwin-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/freebsd-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/freebsd-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-arm': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-ia32': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-loong64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-mips64el': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-ppc64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-riscv64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-s390x': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/netbsd-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/netbsd-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/openbsd-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/openbsd-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/openharmony-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/sunos-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/win32-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/win32-ia32': [ '0.25.12' ],
+44 silly audit   '@esbuild/win32-x64': [ '0.25.12' ],
+44 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+44 silly audit   '@jridgewell/remapping': [ '2.3.5' ],
+44 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+44 silly audit   '@jridgewell/sourcemap-codec': [ '1.5.5' ],
+44 silly audit   '@jridgewell/trace-mapping': [ '0.3.31' ],
+44 silly audit   '@monaco-editor/loader': [ '1.7.0' ],
+44 silly audit   '@monaco-editor/react': [ '4.7.0' ],
+44 silly audit   '@nodelib/fs.scandir': [ '2.1.5' ],
+44 silly audit   '@nodelib/fs.stat': [ '2.0.5' ],
+44 silly audit   '@nodelib/fs.walk': [ '1.2.8' ],
+44 silly audit   '@rolldown/pluginutils': [ '1.0.0-beta.27' ],
+44 silly audit   '@rollup/rollup-android-arm-eabi': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-android-arm64': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-darwin-arm64': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-darwin-x64': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-freebsd-arm64': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-freebsd-x64': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-arm-gnueabihf': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-arm-musleabihf': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-arm64-gnu': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-arm64-musl': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-loong64-gnu': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-loong64-musl': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-ppc64-gnu': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-ppc64-musl': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-riscv64-gnu': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-riscv64-musl': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-s390x-gnu': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-x64-gnu': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-linux-x64-musl': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-openbsd-x64': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-openharmony-arm64': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-win32-arm64-msvc': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-win32-ia32-msvc': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-win32-x64-gnu': [ '4.62.0' ],
+44 silly audit   '@rollup/rollup-win32-x64-msvc': [ '4.62.0' ],
+44 silly audit   '@types/babel__core': [ '7.20.5' ],
+44 silly audit   '@types/babel__generator': [ '7.27.0' ],
+44 silly audit   '@types/babel__template': [ '7.4.4' ],
+44 silly audit   '@types/babel__traverse': [ '7.28.0' ],
+44 silly audit   '@types/estree': [ '1.0.9' ],
+44 silly audit   '@types/trusted-types': [ '2.0.7' ],
+44 silly audit   '@vitejs/plugin-react': [ '4.7.0' ],
+44 silly audit   'agent-base': [ '6.0.2' ],
+44 silly audit   'any-promise': [ '1.3.0' ],
+44 silly audit   anymatch: [ '3.1.3' ],
+44 silly audit   arg: [ '5.0.2' ],
+44 silly audit   asynckit: [ '0.4.0' ],
+44 silly audit   autoprefixer: [ '10.5.0' ],
+44 silly audit   axios: [ '1.18.0' ],
+44 silly audit   'baseline-browser-mapping': [ '2.10.37' ],
+44 silly audit   'binary-extensions': [ '2.3.0' ],
+44 silly audit   braces: [ '3.0.3' ],
+44 silly audit   browserslist: [ '4.28.2' ],
+44 silly audit   'call-bind-apply-helpers': [ '1.0.2' ],
+44 silly audit   'camelcase-css': [ '2.0.1' ],
+44 silly audit   'caniuse-lite': [ '1.0.30001799' ],
+44 silly audit   chokidar: [ '3.6.0' ],
+44 silly audit   'glob-parent': [ '5.1.2', '6.0.2' ],
+44 silly audit   'combined-stream': [ '1.0.8' ],
+44 silly audit   commander: [ '4.1.1' ],
+44 silly audit   'convert-source-map': [ '2.0.0' ],
+44 silly audit   cssesc: [ '3.0.0' ],
+44 silly audit   debug: [ '4.4.3' ],
+44 silly audit   'delayed-stream': [ '1.0.0' ],
+44 silly audit   didyoumean: [ '1.2.2' ],
+44 silly audit   dlv: [ '1.1.3' ],
+44 silly audit   dompurify: [ '3.2.7' ],
+44 silly audit   'dunder-proto': [ '1.0.1' ],
+44 silly audit   'electron-to-chromium': [ '1.5.373' ],
+44 silly audit   'es-define-property': [ '1.0.1' ],
+44 silly audit   'es-errors': [ '1.3.0' ],
+44 silly audit   'es-object-atoms': [ '1.1.2' ],
+44 silly audit   'es-set-tostringtag': [ '2.1.0' ],
+44 silly audit   esbuild: [ '0.25.12' ],
+44 silly audit   escalade: [ '3.2.0' ],
+44 silly audit   'fast-glob': [ '3.3.3' ],
+44 silly audit   fastq: [ '1.20.1' ],
+44 silly audit   'fill-range': [ '7.1.1' ],
+44 silly audit   'follow-redirects': [ '1.16.0' ],
+44 silly audit   'form-data': [ '4.0.6' ],
+44 silly audit   'fraction.js': [ '5.3.4' ],
+44 silly audit   fsevents: [ '2.3.3' ],
+44 silly audit   'function-bind': [ '1.1.2' ],
+44 silly audit   gensync: [ '1.0.0-beta.2' ],
+44 silly audit   'get-intrinsic': [ '1.3.0' ],
+44 silly audit   'get-proto': [ '1.0.1' ],
+44 silly audit   gopd: [ '1.2.0' ],
+44 silly audit   'has-symbols': [ '1.1.0' ],
+44 silly audit   'has-tostringtag': [ '1.0.2' ],
+44 silly audit   hasown: [ '2.0.4' ],
+44 silly audit   'https-proxy-agent': [ '5.0.1' ],
+44 silly audit   'is-binary-path': [ '2.1.0' ],
+44 silly audit   'is-core-module': [ '2.16.2' ],
+44 silly audit   'is-extglob': [ '2.1.1' ],
+44 silly audit   'is-glob': [ '4.0.3' ],
+44 silly audit   'is-number': [ '7.0.0' ],
+44 silly audit   'isomorphic.js': [ '0.2.5' ],
+44 silly audit   jiti: [ '1.21.7' ],
+44 silly audit   'js-tokens': [ '4.0.0' ],
+44 silly audit   jsesc: [ '3.1.0' ],
+44 silly audit   json5: [ '2.2.3' ],
+44 silly audit   lib0: [ '0.2.117' ],
+44 silly audit   lilconfig: [ '3.1.3' ],
+44 silly audit   'lines-and-columns': [ '1.2.4' ],
+44 silly audit   'loose-envify': [ '1.4.0' ],
+44 silly audit   'lru-cache': [ '5.1.1' ],
+44 silly audit   marked: [ '14.0.0' ],
+44 silly audit   'math-intrinsics': [ '1.1.0' ],
+44 silly audit   merge2: [ '1.4.1' ],
+44 silly audit   micromatch: [ '4.0.8' ],
+44 silly audit   'mime-db': [ '1.52.0' ],
+44 silly audit   'mime-types': [ '2.1.35' ],
+44 silly audit   'monaco-editor': [ '0.55.1' ],
+44 silly audit   ms: [ '2.1.3' ],
+44 silly audit   mz: [ '2.7.0' ],
+44 silly audit   nanoid: [ '3.3.12' ],
+44 silly audit   'node-releases': [ '2.0.47' ],
+44 silly audit   'normalize-path': [ '3.0.0' ],
+44 silly audit   'object-assign': [ '4.1.1' ],
+44 silly audit   'object-hash': [ '3.0.0' ],
+44 silly audit   'path-parse': [ '1.0.7' ],
+44 silly audit   picocolors: [ '1.1.1' ],
+44 silly audit   picomatch: [ '2.3.2', '4.0.4' ],
+44 silly audit   pify: [ '2.3.0' ],
+44 silly audit   pirates: [ '4.0.7' ],
+44 silly audit   postcss: [ '8.5.15' ],
+44 silly audit   'postcss-import': [ '15.1.0' ],
+44 silly audit   'postcss-js': [ '4.1.0' ],
+44 silly audit   'postcss-load-config': [ '6.0.1' ],
+44 silly audit   'postcss-nested': [ '6.2.0' ],
+44 silly audit   'postcss-selector-parser': [ '6.1.4' ],
+44 silly audit   'postcss-value-parser': [ '4.2.0' ],
+44 silly audit   'proxy-from-env': [ '2.1.0' ],
+44 silly audit   'queue-microtask': [ '1.2.3' ],
+44 silly audit   react: [ '18.3.1' ],
+44 silly audit   'react-dom': [ '18.3.1' ],
+44 silly audit   'react-refresh': [ '0.17.0' ],
+44 silly audit   'read-cache': [ '1.0.0' ],
+44 silly audit   readdirp: [ '3.6.0' ],
+44 silly audit   resolve: [ '1.22.12' ],
+44 silly audit   reusify: [ '1.1.0' ],
+44 silly audit   rollup: [ '4.62.0' ],
+44 silly audit   'run-parallel': [ '1.2.0' ],
+44 silly audit   scheduler: [ '0.23.2' ],
+44 silly audit   semver: [ '6.3.1' ],
+44 silly audit   'source-map-js': [ '1.2.1' ],
+44 silly audit   'state-local': [ '1.0.7' ],
+44 silly audit   sucrase: [ '3.35.1' ],
+44 silly audit   'supports-preserve-symlinks-flag': [ '1.0.0' ],
+44 silly audit   tailwindcss: [ '3.4.19' ],
+44 silly audit   thenify: [ '3.3.1' ],
+44 silly audit   'thenify-all': [ '1.6.0' ],
+44 silly audit   tinyglobby: [ '0.2.17' ],
+44 silly audit   fdir: [ '6.5.0' ],
+44 silly audit   'to-regex-range': [ '5.0.1' ],
+44 silly audit   'ts-interface-checker': [ '0.1.13' ],
+44 silly audit   'update-browserslist-db': [ '1.2.3' ],
+44 silly audit   'util-deprecate': [ '1.0.2' ],
+44 silly audit   vite: [ '6.4.3' ],
+44 silly audit   'y-monaco': [ '0.1.6' ],
+44 silly audit   'y-protocols': [ '1.0.7' ],
+44 silly audit   yallist: [ '3.1.1' ],
+44 silly audit   yjs: [ '13.6.31' ],
+44 silly audit   'react-router-dom': [ '6.30.4' ],
+44 silly audit   '@remix-run/router': [ '1.23.3' ],
+44 silly audit   'react-router': [ '6.30.4' ]
+44 silly audit }
+45 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\fsevents
+46 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\fsevents' ]
+47 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-win32-ia32-msvc
+48 silly reify mark deleted [
+48 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-win32-ia32-msvc'
+48 silly reify ]
+49 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-win32-arm64-msvc
+50 silly reify mark deleted [
+50 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-win32-arm64-msvc'
+50 silly reify ]
+51 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-openharmony-arm64
+52 silly reify mark deleted [
+52 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-openharmony-arm64'
+52 silly reify ]
+53 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-openbsd-x64
+54 silly reify mark deleted [
+54 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-openbsd-x64'
+54 silly reify ]
+55 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-x64-musl
+56 silly reify mark deleted [
+56 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-x64-musl'
+56 silly reify ]
+57 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-x64-gnu
+58 silly reify mark deleted [
+58 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-x64-gnu'
+58 silly reify ]
+59 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-s390x-gnu
+60 silly reify mark deleted [
+60 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-s390x-gnu'
+60 silly reify ]
+61 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-riscv64-musl
+62 silly reify mark deleted [
+62 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-riscv64-musl'
+62 silly reify ]
+63 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-riscv64-gnu
+64 silly reify mark deleted [
+64 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-riscv64-gnu'
+64 silly reify ]
+65 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-ppc64-musl
+66 silly reify mark deleted [
+66 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-ppc64-musl'
+66 silly reify ]
+67 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-ppc64-gnu
+68 silly reify mark deleted [
+68 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-ppc64-gnu'
+68 silly reify ]
+69 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-loong64-musl
+70 silly reify mark deleted [
+70 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-loong64-musl'
+70 silly reify ]
+71 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-loong64-gnu
+72 silly reify mark deleted [
+72 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-loong64-gnu'
+72 silly reify ]
+73 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-arm64-musl
+74 silly reify mark deleted [
+74 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-arm64-musl'
+74 silly reify ]
+75 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-arm64-gnu
+76 silly reify mark deleted [
+76 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-arm64-gnu'
+76 silly reify ]
+77 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-arm-musleabihf
+78 silly reify mark deleted [
+78 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-arm-musleabihf'
+78 silly reify ]
+79 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-linux-arm-gnueabihf
+80 silly reify mark deleted [
+80 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-linux-arm-gnueabihf'
+80 silly reify ]
+81 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-freebsd-x64
+82 silly reify mark deleted [
+82 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-freebsd-x64'
+82 silly reify ]
+83 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-freebsd-arm64
+84 silly reify mark deleted [
+84 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-freebsd-arm64'
+84 silly reify ]
+85 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-darwin-x64
+86 silly reify mark deleted [
+86 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-darwin-x64'
+86 silly reify ]
+87 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-darwin-arm64
+88 silly reify mark deleted [
+88 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-darwin-arm64'
+88 silly reify ]
+89 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-android-arm64
+90 silly reify mark deleted [
+90 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-android-arm64'
+90 silly reify ]
+91 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@rollup\rollup-android-arm-eabi
+92 silly reify mark deleted [
+92 silly reify   'C:\\code_editor\\frontend\\node_modules\\@rollup\\rollup-android-arm-eabi'
+92 silly reify ]
+93 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\win32-ia32
+94 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\win32-ia32' ]
+95 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\win32-arm64
+96 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\win32-arm64' ]
+97 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\sunos-x64
+98 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\sunos-x64' ]
+99 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\openharmony-arm64
+100 silly reify mark deleted [
+100 silly reify   'C:\\code_editor\\frontend\\node_modules\\@esbuild\\openharmony-arm64'
+100 silly reify ]
+101 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\openbsd-x64
+102 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\openbsd-x64' ]
+103 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\openbsd-arm64
+104 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\openbsd-arm64' ]
+105 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\netbsd-x64
+106 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\netbsd-x64' ]
+107 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\netbsd-arm64
+108 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\netbsd-arm64' ]
+109 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-x64
+110 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-x64' ]
+111 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-s390x
+112 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-s390x' ]
+113 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-riscv64
+114 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-riscv64' ]
+115 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-ppc64
+116 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-ppc64' ]
+117 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-mips64el
+118 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-mips64el' ]
+119 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-loong64
+120 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-loong64' ]
+121 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-ia32
+122 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-ia32' ]
+123 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-arm64
+124 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-arm64' ]
+125 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\linux-arm
+126 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\linux-arm' ]
+127 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\freebsd-x64
+128 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\freebsd-x64' ]
+129 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\freebsd-arm64
+130 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\freebsd-arm64' ]
+131 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\darwin-x64
+132 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\darwin-x64' ]
+133 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\darwin-arm64
+134 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\darwin-arm64' ]
+135 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\android-x64
+136 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\android-x64' ]
+137 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\android-arm64
+138 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\android-arm64' ]
+139 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\android-arm
+140 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\android-arm' ]
+141 verbose reify failed optional dependency C:\code_editor\frontend\node_modules\@esbuild\aix-ppc64
+142 silly reify mark deleted [ 'C:\\code_editor\\frontend\\node_modules\\@esbuild\\aix-ppc64' ]
+143 http cache @remix-run/router@https://registry.npmjs.org/@remix-run/router/-/router-1.23.3.tgz 0ms (cache hit)
+144 http cache react-router-dom@https://registry.npmjs.org/react-router-dom/-/react-router-dom-6.30.4.tgz 0ms (cache hit)
+145 silly tarball no local data for @remix-run/router@https://registry.npmjs.org/@remix-run/router/-/router-1.23.3.tgz. Extracting by manifest.
+146 http cache react-router@https://registry.npmjs.org/react-router/-/react-router-6.30.4.tgz 0ms (cache hit)
+147 silly tarball no local data for react-router-dom@https://registry.npmjs.org/react-router-dom/-/react-router-dom-6.30.4.tgz. Extracting by manifest.
+148 silly tarball no local data for react-router@https://registry.npmjs.org/react-router/-/react-router-6.30.4.tgz. Extracting by manifest.
+149 http fetch GET 200 https://registry.npmjs.org/react-router/-/react-router-6.30.4.tgz 299ms (cache miss)
+150 http fetch GET 200 https://registry.npmjs.org/react-router-dom/-/react-router-dom-6.30.4.tgz 302ms (cache miss)
+151 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 361ms
+152 silly audit report {
+152 silly audit report   dompurify: [
+152 silly audit report     {
+152 silly audit report       id: 1120800,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-x4vx-rjvf-j5p4',
+152 silly audit report       title: 'DOMPurify: `IN_PLACE` mode trusts attacker-controlled `nodeName` on live non-form nodes, allowing script retention and XSS via attacker-supplied DOM objects',
+152 silly audit report       severity: 'low',
+152 silly audit report       vulnerable_versions: '<=3.4.6',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1120801,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-76mc-f452-cxcm',
+152 silly audit report       title: 'DOMPurify: Hook mutation of `data.allowedTags` / `data.allowedAttributes` permanently pollutes `DEFAULT_ALLOWED_TAGS` / `DEFAULT_ALLOWED_ATTR`',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<3.4.7',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1120802,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-hpcv-96wg-7vj8',
+152 silly audit report       title: 'DOMPurify: Cross-realm IN_PLACE sanitization leaves executable markup intact via realm-bound `instanceof` checks',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<=3.4.5',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1120803,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-r47g-fvhr-h676',
+152 silly audit report       title: 'DOMPurify: IN_PLACE mode preserves attributes of a clobbered root element, allowing XSS via attacker-controlled root DOM',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<=3.4.5',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1120805,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-vxr8-fq34-vvx9',
+152 silly audit report       title: 'DOMPurify: Trusted Types policy survives `clearConfig()` and can poison later `RETURN_TRUSTED_TYPE` output',
+152 silly audit report       severity: 'low',
+152 silly audit report       vulnerable_versions: '<3.4.9',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1120812,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-gvmj-g25r-r7wr',
+152 silly audit report       title: 'DOMPurify: SAFE_FOR_TEMPLATES bypass - template expressions survive sanitization inside <template> content when using DOM output modes',
+152 silly audit report       severity: 'low',
+152 silly audit report       vulnerable_versions: '>=3.0.0 <=3.4.7',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1120813,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-rp9w-3fw7-7cwq',
+152 silly audit report       title: 'DOMPurify IN_PLACE Sanitization Bypass via Attached Shadow Root Inside <template>.content',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<=3.4.6',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1115668,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-v2wj-7wpq-c8vv',
+152 silly audit report       title: 'DOMPurify contains a Cross-site Scripting vulnerability',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '>=3.1.3 <=3.3.1',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1115921,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-cjmm-f4jc-qw8r',
+152 silly audit report       title: 'DOMPurify ADD_ATTR predicate skips URI validation',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<=3.3.1',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1115922,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-cj63-jhhr-wcxv',
+152 silly audit report       title: 'DOMPurify USE_PROFILES prototype pollution allows event handlers',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<=3.3.1',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1116663,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-39q2-94rc-95cp',
+152 silly audit report       title: "DOMPurify's ADD_TAGS function form bypasses FORBID_TAGS due to short-circuit evaluation",
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<=3.3.3',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1117138,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-h7mw-gpvr-xq4m',
+152 silly audit report       title: 'DOMPurify: FORBID_TAGS bypassed by function-based ADD_TAGS predicate (asymmetry with FORBID_ATTR fix)',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<3.4.0',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1117139,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-crv5-9vww-q3g8',
+152 silly audit report       title: 'DOMPurify has a SAFE_FOR_TEMPLATES bypass in RETURN_DOM mode',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '>=1.0.10 <3.4.0',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1117140,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-v9jr-rg53-9pgp',
+152 silly audit report       title: 'DOMPurify: Prototype Pollution to XSS Bypass via CUSTOM_ELEMENT_HANDLING Fallback',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '>=3.0.1 <3.4.0',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     },
+152 silly audit report     {
+152 silly audit report       id: 1117795,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-h8r8-wccr-v5f2',
+152 silly audit report       title: 'DOMPurify is vulnerable to mutation-XSS via Re-Contextualization ',
+152 silly audit report       severity: 'moderate',
+152 silly audit report       vulnerable_versions: '<3.3.2',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     }
+152 silly audit report   ],
+152 silly audit report   esbuild: [
+152 silly audit report     {
+152 silly audit report       id: 1120679,
+152 silly audit report       url: 'https://github.com/advisories/GHSA-gv7w-rqvm-qjhr',
+152 silly audit report       title: 'esbuild: Missing binary integrity verification in Deno module enables remote code execution via NPM_CONFIG_REGISTRY',
+152 silly audit report       severity: 'high',
+152 silly audit report       vulnerable_versions: '>=0.17.0 <0.28.1',
+152 silly audit report       cwe: [Array],
+152 silly audit report       cvss: [Object]
+152 silly audit report     }
+152 silly audit report   ]
+152 silly audit report }
+153 silly packumentCache corgi:https://registry.npmjs.org/dompurify cache-miss
+154 silly packumentCache corgi:https://registry.npmjs.org/esbuild cache-miss
+155 http fetch GET 200 https://registry.npmjs.org/@remix-run/router/-/router-1.23.3.tgz 467ms (cache miss)
+156 http fetch GET 200 https://registry.npmjs.org/dompurify 301ms (cache miss)
+157 silly packumentCache corgi:https://registry.npmjs.org/dompurify set size:undefined disposed:false
+158 http fetch GET 200 https://registry.npmjs.org/esbuild 373ms (cache miss)
+159 silly packumentCache corgi:https://registry.npmjs.org/esbuild set size:undefined disposed:false
+160 silly packumentCache corgi:https://registry.npmjs.org/monaco-editor cache-miss
+161 http fetch GET 200 https://registry.npmjs.org/monaco-editor 332ms (cache miss)
+162 silly packumentCache corgi:https://registry.npmjs.org/monaco-editor set size:undefined disposed:false
+163 silly packumentCache corgi:https://registry.npmjs.org/vite cache-miss
+164 http fetch GET 200 https://registry.npmjs.org/vite 68ms (cache miss)
+165 silly packumentCache corgi:https://registry.npmjs.org/vite set size:undefined disposed:false
+166 silly packumentCache corgi:https://registry.npmjs.org/@monaco-editor%2freact cache-miss
+167 silly packumentCache corgi:https://registry.npmjs.org/y-monaco cache-miss
+168 http fetch GET 200 https://registry.npmjs.org/y-monaco 320ms (cache miss)
+169 silly packumentCache corgi:https://registry.npmjs.org/y-monaco set size:undefined disposed:false
+170 http fetch GET 200 https://registry.npmjs.org/@monaco-editor%2freact 746ms (cache miss)
+171 silly packumentCache corgi:https://registry.npmjs.org/@monaco-editor%2freact set size:undefined disposed:false
+172 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react cache-miss
+173 http fetch GET 200 https://registry.npmjs.org/@vitejs%2fplugin-react 207ms (cache miss)
+174 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react set size:undefined disposed:false
+175 silly ADD node_modules/react-router
+176 silly ADD node_modules/@remix-run/router
+177 silly ADD node_modules/react-router-dom
+178 silly ADD
+179 silly ADD
+180 silly ADD
+181 silly ADD
+182 silly ADD
+183 silly ADD
+184 silly ADD
+185 silly ADD
+186 silly ADD
+187 silly ADD
+188 silly ADD
+189 silly ADD
+190 silly ADD
+191 silly ADD
+192 silly ADD
+193 silly ADD
+194 silly ADD
+195 silly ADD
+196 silly ADD
+197 silly ADD
+198 silly ADD
+199 silly ADD
+200 silly ADD
+201 silly ADD
+202 silly ADD
+203 silly ADD
+204 silly ADD
+205 silly ADD
+206 silly ADD
+207 silly ADD
+208 silly ADD
+209 silly ADD
+210 silly ADD
+211 silly ADD
+212 silly ADD
+213 silly ADD
+214 silly ADD
+215 silly ADD
+216 silly ADD
+217 silly ADD
+218 silly ADD
+219 silly ADD
+220 silly ADD
+221 silly ADD
+222 silly ADD
+223 silly ADD
+224 silly ADD
+225 silly ADD
+226 silly ADD
+227 verbose cwd C:\code_editor\frontend
+228 verbose os Windows_NT 10.0.26200
+229 verbose node v22.17.0
+230 verbose npm  v10.9.2
+231 notice
+231 notice New major version of npm available! 10.9.2 -> 11.17.0
+231 notice Changelog: https://github.com/npm/cli/releases/tag/v11.17.0
+231 notice To update run: npm install -g npm@11.17.0
+231 notice  { force: true, [Symbol(proc-log.meta)]: true }
+232 verbose exit 0
+233 info ok

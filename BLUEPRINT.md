@@ -1,6 +1,6 @@
 Hello!
 
-Building a real-time collaborative code editor with integrated AI is a phenomenal way to stand out for a Big Tech internship. As a Staff Architect, I can tell you that this project hits all the right signals: distributed systems, state management, real-time networking, and modern UI/UX design. The "Google AI Studio" aesthetic you are targeting—with its deep slate palettes and hyper-responsive interface—will immediately communicate a high level of product maturity to any engineering recruiter.
+Building a real-time collaborative code editor with integrated AI.
 
 Here is your production-grade blueprint to architect and build this system.
 

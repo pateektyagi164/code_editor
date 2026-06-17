@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.jsx'
 import { useRoom } from '../../contexts/RoomContext.jsx'
+import { useClickOutside } from '../../hooks/useClickOutside.js'
 import ActiveUserAvatars from '../editor/ActiveUserAvatars.jsx'
 import LatencyTracker from './LatencyTracker.jsx'
 
 function LoginModal() {
   const { providers, login, setShowLogin } = useAuth()
+  const location = useLocation()
+  const authNext = `${location.pathname}${location.search}`
 
   const hasProviders = providers.google || providers.github
 
@@ -36,7 +40,7 @@ function LoginModal() {
               {providers.google && (
                 <button
                   type="button"
-                  onClick={() => login('google')}
+                  onClick={() => login('google', authNext)}
                   className="w-full flex items-center justify-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg bg-slate-850 border border-slate-700/50 text-slate-200 hover:bg-slate-800 hover:border-slate-600 transition-all"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -64,7 +68,7 @@ function LoginModal() {
               {providers.github && (
                 <button
                   type="button"
-                  onClick={() => login('github')}
+                  onClick={() => login('github', authNext)}
                   className="w-full flex items-center justify-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg bg-slate-850 border border-slate-700/50 text-slate-200 hover:bg-slate-800 hover:border-slate-600 transition-all"
                 >
                   <span className="text-base">🐙</span>
@@ -80,9 +84,16 @@ function LoginModal() {
 }
 
 export default function Navbar({ workspaceName = 'Untitled Workspace' }) {
-  const { user, loading, isAuthenticated, setShowLogin, logout, showLogin } = useAuth()
+  const { user, loading, isAuthenticated, setShowLogin, logout, showLogin, providers, login } = useAuth()
   const { latencyMs, connected, activeUsers } = useRoom()
   const [copied, setCopied] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef(null)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const authNext = `${location.pathname}${location.search}`
+
+  useClickOutside(profileRef, () => setProfileOpen(false), profileOpen)
 
   const handleShare = async () => {
     await navigator.clipboard.writeText(window.location.href)
@@ -90,11 +101,28 @@ export default function Navbar({ workspaceName = 'Untitled Workspace' }) {
     window.setTimeout(() => setCopied(false), 1800)
   }
 
+  const handleSignOut = useCallback(async () => {
+    setProfileOpen(false)
+    await logout()
+    navigate('/')
+  }, [logout, navigate])
+
+  const handleSwitchAccount = useCallback(async () => {
+    setProfileOpen(false)
+    await logout()
+    setShowLogin(true)
+  }, [logout, setShowLogin])
+
   return (
     <>
       <header className="flex min-h-14 flex-wrap items-center justify-between gap-3 px-4 py-2 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm shrink-0">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10 shadow-glow-accent">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10 shadow-glow-accent hover:bg-accent/20"
+            aria-label="Go to dashboard"
+          >
             <svg
               className="w-4 h-4 text-accent"
               fill="none"
@@ -108,7 +136,7 @@ export default function Navbar({ workspaceName = 'Untitled Workspace' }) {
                 d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
               />
             </svg>
-          </div>
+          </button>
           <h1 className="shrink-0 text-base font-semibold text-slate-200 tracking-tight">
             Code Collab
           </h1>
@@ -131,8 +159,14 @@ export default function Navbar({ workspaceName = 'Untitled Workspace' }) {
           {loading ? (
             <span className="text-xs text-slate-500">Loading…</span>
           ) : isAuthenticated ? (
-            <>
-              <div className="flex min-w-0 items-center gap-2">
+            <div className="relative" ref={profileRef}>
+              <button
+                type="button"
+                onClick={() => setProfileOpen((open) => !open)}
+                className="flex min-w-0 items-center gap-2 rounded-lg border border-transparent px-1.5 py-1 hover:border-slate-700/60 hover:bg-slate-850"
+                aria-haspopup="menu"
+                aria-expanded={profileOpen}
+              >
                 {user.avatar_url ? (
                   <img
                     src={user.avatar_url}
@@ -145,15 +179,62 @@ export default function Navbar({ workspaceName = 'Untitled Workspace' }) {
                   </div>
                 )}
                 <span className="hidden max-w-36 truncate sm:inline text-sm text-slate-300">{user.name}</span>
-              </div>
-              <button
-                type="button"
-                onClick={logout}
-                className="px-3 py-1.5 text-sm font-medium rounded-lg text-slate-400 border border-slate-700/50 hover:text-slate-200 hover:bg-slate-850 transition-all"
-              >
-                Sign Out
               </button>
-            </>
+              {profileOpen && (
+                <div className="absolute right-0 z-40 mt-2 w-64 rounded-lg border border-slate-700/70 bg-slate-950 p-2 shadow-glow-lg" role="menu">
+                  <div className="border-b border-slate-800 px-2 py-2">
+                    <div className="truncate text-sm font-semibold text-slate-100">{user.name}</div>
+                    <div className="truncate text-xs text-slate-500">{user.email}</div>
+                  </div>
+                  {(providers.google || providers.github) && (
+                    <div className="mt-2 space-y-1 border-b border-slate-800 pb-2">
+                      {providers.google && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileOpen(false)
+                            login('google', authNext)
+                          }}
+                          className="w-full rounded-md px-2 py-2 text-left text-sm text-slate-300 hover:bg-slate-850"
+                          role="menuitem"
+                        >
+                          Continue with Google
+                        </button>
+                      )}
+                      {providers.github && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileOpen(false)
+                            login('github', authNext)
+                          }}
+                          className="w-full rounded-md px-2 py-2 text-left text-sm text-slate-300 hover:bg-slate-850"
+                          role="menuitem"
+                        >
+                          Continue with GitHub
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSwitchAccount}
+                    className="mt-2 w-full rounded-md px-2 py-2 text-left text-sm font-medium text-slate-300 hover:bg-slate-850"
+                    role="menuitem"
+                  >
+                    Use a different account
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="mt-1 w-full rounded-md px-2 py-2 text-left text-sm font-medium text-red-300 hover:bg-red-400/10"
+                    role="menuitem"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <button
               type="button"

@@ -8,6 +8,14 @@ import {
 } from '../services/api.js'
 
 const AuthContext = createContext(null)
+const AUTH_NEXT_KEY = 'code_collab_auth_next'
+
+function resolveSafeNext(path) {
+  if (!path || !path.startsWith('/')) {
+    return '/'
+  }
+  return path
+}
 
 function AuthCallback() {
   const { completeOAuthCallback } = useAuth()
@@ -30,6 +38,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [providers, setProviders] = useState({ google: false, github: false })
   const [loading, setLoading] = useState(true)
+  const [authState, setAuthState] = useState('checking')
   const [showLogin, setShowLogin] = useState(false)
 
   const isCallback = window.location.pathname === '/auth/callback'
@@ -38,8 +47,12 @@ export function AuthProvider({ children }) {
     try {
       const currentUser = await fetchCurrentUser()
       setUser(currentUser)
+      setAuthState(currentUser ? 'authenticated' : 'anonymous')
+      return currentUser
     } catch {
       setUser(null)
+      setAuthState('anonymous')
+      return null
     }
   }, [])
 
@@ -54,14 +67,16 @@ export function AuthProvider({ children }) {
         setProviders({ google: false, github: false })
       }
 
-      const token = await bootstrapAccessToken()
-      if (token) {
-        await loadUser()
-      } else {
-        setUser(null)
+      const token = await bootstrapAccessToken({ forceRefresh: true })
+      if (token && (await loadUser())) {
+        return
       }
+
+      setUser(null)
+      setAuthState('anonymous')
     } catch {
       setUser(null)
+      setAuthState('anonymous')
     } finally {
       setLoading(false)
     }
@@ -78,28 +93,41 @@ export function AuthProvider({ children }) {
   const completeOAuthCallback = useCallback(async () => {
     setLoading(true)
     const params = new URLSearchParams(window.location.search)
-    const nextPath = params.get('next') || '/'
+    const nextFromQuery = params.get('next')
+    const nextFromStorage = sessionStorage.getItem(AUTH_NEXT_KEY)
+    const safeNext = resolveSafeNext(nextFromQuery || nextFromStorage || '/')
+    sessionStorage.removeItem(AUTH_NEXT_KEY)
+
     try {
-      await bootstrapAccessToken()
+      await bootstrapAccessToken({ forceRefresh: true })
       await loadUser()
-      window.location.replace(nextPath.startsWith('/') ? nextPath : '/')
+      window.location.replace(safeNext)
     } catch {
       setUser(null)
-      window.location.replace(nextPath.startsWith('/') ? nextPath : '/')
+      setAuthState('anonymous')
+      window.location.replace(safeNext)
     } finally {
       setLoading(false)
     }
   }, [loadUser])
 
-  const login = useCallback((provider, nextPath = window.location.pathname) => {
-    window.location.href = getOAuthLoginUrl(provider, nextPath)
+  const login = useCallback((provider, nextPath) => {
+    const next = resolveSafeNext(
+      nextPath || `${window.location.pathname}${window.location.search}`,
+    )
+    sessionStorage.setItem(AUTH_NEXT_KEY, next)
+    window.location.href = getOAuthLoginUrl(provider, next)
   }, [])
 
   const logout = useCallback(async () => {
     try {
       await logoutUser()
     } finally {
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith('code_collab_'))
+        .forEach((key) => localStorage.removeItem(key))
       setUser(null)
+      setAuthState('anonymous')
       setShowLogin(false)
     }
   }, [])
@@ -109,6 +137,7 @@ export function AuthProvider({ children }) {
       user,
       providers,
       loading,
+      authState,
       isAuthenticated: !!user,
       showLogin,
       setShowLogin,
@@ -116,7 +145,7 @@ export function AuthProvider({ children }) {
       logout,
       completeOAuthCallback,
     }),
-    [user, providers, loading, showLogin, login, logout, completeOAuthCallback],
+    [user, providers, loading, authState, showLogin, login, logout, completeOAuthCallback],
   )
 
   if (isCallback) {

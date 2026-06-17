@@ -1,13 +1,15 @@
 import JSZip from 'jszip'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import ChatSidebar from './components/ai/ChatSidebar.jsx'
-import MonacoWrapper, { resolveLanguage } from './components/editor/MonacoWrapper.jsx'
+import MonacoWrapper, { DEFAULT_EDITOR_CONTENT, resolveLanguage } from './components/editor/MonacoWrapper.jsx'
 import OutputTerminal from './components/editor/OutputTerminal.jsx'
 import ThreeColumnLayout from './components/layout/ThreeColumnLayout.jsx'
 import { RoomProvider } from './contexts/RoomContext.jsx'
 import { useAuth } from './contexts/AuthContext.jsx'
-import { createRoom, fetchRooms, runCode } from './services/api.js'
+import { useRoom } from './contexts/RoomContext.jsx'
+import { useCRDT } from './hooks/useCRDT.js'
+import { createRoom, deleteRoom, fetchRoom, fetchRooms, runCode } from './services/api.js'
 
 const DEFAULT_FILE_ID = 'main'
 const PENDING_WORKSPACE_KEY = 'code_collab_pending_workspace'
@@ -47,7 +49,7 @@ function HealthBanner({ backendStatus }) {
 
 function Dashboard({ backendStatus }) {
   const navigate = useNavigate()
-  const { providers, login, loading, isAuthenticated, user } = useAuth()
+  const { providers, login, loading, authState, isAuthenticated, user } = useAuth()
   const [creating, setCreating] = useState(false)
   const [workspaceName, setWorkspaceName] = useState('My Workspace')
   const [rooms, setRooms] = useState([])
@@ -77,6 +79,10 @@ function Dashboard({ backendStatus }) {
   }
 
   const handleCreateRoom = async () => {
+    if (authState === 'checking') {
+      return
+    }
+
     if (!isAuthenticated) {
       setError('Sign in or sign up first, then your workspace will open automatically.')
       localStorage.setItem(PENDING_WORKSPACE_KEY, '1')
@@ -107,7 +113,21 @@ function Dashboard({ backendStatus }) {
   const handleProviderLogin = (provider) => {
     localStorage.setItem(PENDING_WORKSPACE_KEY, '1')
     localStorage.setItem(PENDING_WORKSPACE_NAME_KEY, workspaceName.trim() || 'Untitled Workspace')
-    login(provider)
+    login(provider, window.location.pathname)
+  }
+
+  const handleDeleteRoom = async (roomId, roomName) => {
+    if (!window.confirm(`Delete "${roomName}" permanently?`)) {
+      return
+    }
+    try {
+      await deleteRoom(roomId)
+      localStorage.removeItem(`code_collab_workspace_${roomId}`)
+      setRooms((current) => current.filter((room) => room.room_id !== roomId))
+    } catch (requestError) {
+      const detail = requestError.response?.data?.detail
+      setError(typeof detail === 'string' ? detail : 'Could not delete this workspace.')
+    }
   }
 
   useEffect(() => {
@@ -117,6 +137,7 @@ function Dashboard({ backendStatus }) {
   useEffect(() => {
     if (
       !isAuthenticated
+      || authState !== 'authenticated'
       || creating
       || autoCreateAttemptedRef.current
       || localStorage.getItem(PENDING_WORKSPACE_KEY) !== '1'
@@ -126,7 +147,7 @@ function Dashboard({ backendStatus }) {
 
     autoCreateAttemptedRef.current = true
     handleCreateRoom()
-  }, [isAuthenticated, creating])
+  }, [isAuthenticated, authState, creating])
 
   return (
     <div className="h-full flex flex-col bg-[#0b0b0b]">
@@ -158,8 +179,8 @@ function Dashboard({ backendStatus }) {
         )}
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6">
-        <section className="w-full max-w-md text-center">
+      <main className={isAuthenticated ? 'flex-1 overflow-auto px-5 py-8' : 'flex-1 flex items-center justify-center px-6'}>
+        <section className={isAuthenticated ? 'mx-auto w-full max-w-6xl text-left' : 'w-full max-w-md text-center'}>
           <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-850 border border-slate-700/60 text-3xl font-bold text-accent shadow-glow-lg">
             &lt;/&gt;
           </div>
@@ -170,7 +191,11 @@ function Dashboard({ backendStatus }) {
             Real-time AI IDE Environment
           </p>
 
-          {!isAuthenticated ? (
+          {authState === 'checking' ? (
+            <div className="mt-8 rounded-lg border border-slate-700/60 bg-slate-900 px-4 py-5 text-sm text-slate-400">
+              Restoring your session...
+            </div>
+          ) : !isAuthenticated ? (
             <>
               <div className="mt-8 grid gap-3">
                 {hasProviders ? (
@@ -205,8 +230,9 @@ function Dashboard({ backendStatus }) {
               </button>
             </>
           ) : (
-            <div className="mt-8 text-left rounded-xl border border-slate-700/50 bg-slate-900/70 p-4 shadow-glow">
-              <div className="mb-5 flex items-center gap-3">
+            <div className="mt-8 space-y-6 text-left">
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-700/50 bg-slate-900/70 p-4 shadow-glow">
+                <div className="flex min-w-0 items-center gap-3">
                 {user?.avatar_url ? (
                   <img src={user.avatar_url} alt={user.name} className="h-11 w-11 rounded-lg object-cover ring-1 ring-slate-700" />
                 ) : (
@@ -222,9 +248,16 @@ function Dashboard({ backendStatus }) {
                     {user?.last_login_at ? ` · Last login ${new Date(user.last_login_at).toLocaleString()}` : ''}
                   </div>
                 </div>
+                </div>
+                <span className="rounded-lg border border-slate-700/50 bg-slate-950 px-3 py-1.5 text-xs font-semibold text-slate-400">
+                  {roomsLoading ? 'Loading...' : `${rooms.length} workspaces`}
+                </span>
               </div>
 
-              <label className="block">
+              <div className="grid gap-5 lg:grid-cols-[20rem_1fr]">
+              <div className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-4 shadow-glow">
+              <h2 className="text-sm font-semibold text-slate-100">Create workspace</h2>
+              <label className="mt-4 block">
                 <span className="mb-2 block text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
                   Workspace name
                 </span>
@@ -245,43 +278,60 @@ function Dashboard({ backendStatus }) {
                 <span className="text-lg leading-none">+</span>
                 {creating ? 'Creating Workspace...' : 'New Workspace'}
               </button>
+              </div>
 
-              <div className="mt-6">
+              <div className="min-w-0">
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-slate-300">Your workspaces</h2>
+                  <h2 className="text-sm font-semibold text-slate-300">Recent workspaces</h2>
                   <span className="text-xs text-slate-500">
                     {roomsLoading ? 'Loading...' : `${rooms.length} saved`}
                   </span>
                 </div>
-                <div className="max-h-56 overflow-auto rounded-lg border border-slate-700/50 bg-slate-950/70">
                   {rooms.length === 0 ? (
-                    <div className="px-4 py-5 text-sm text-slate-500">
+                    <div className="rounded-xl border border-dashed border-slate-700/70 bg-slate-950/60 px-4 py-10 text-center text-sm text-slate-500">
                       No workspaces yet. Create one to start building.
                     </div>
                   ) : (
-                    rooms.map((room) => (
-                      <button
-                        key={room.room_id}
-                        type="button"
-                        onClick={() => {
-                          localStorage.setItem(`code_collab_workspace_${room.room_id}`, room.name)
-                          navigate(`/${room.room_id}`)
-                        }}
-                        className="flex w-full items-center justify-between gap-3 border-b border-slate-700/40 px-4 py-3 text-left last:border-b-0 hover:bg-slate-850 transition-colors"
-                      >
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-medium text-slate-200">
-                            {room.name}
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {rooms.map((room) => (
+                      <div key={room.room_id} className="group rounded-xl border border-slate-800 bg-slate-900/80 p-4 transition-all hover:border-accent/30 hover:shadow-glow">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            localStorage.setItem(`code_collab_workspace_${room.room_id}`, room.name)
+                            navigate(`/${room.room_id}`)
+                          }}
+                          className="block w-full text-left"
+                        >
+                          <span className="mb-4 flex h-20 items-center justify-center rounded-lg border border-slate-800 bg-slate-950 text-2xl font-bold text-accent">
+                            &lt;/&gt;
                           </span>
-                          <span className="block truncate text-xs text-slate-500">
+                          <span className="block truncate text-sm font-semibold text-slate-100">{room.name}</span>
+                          <span className="mt-1 block truncate text-xs text-slate-500">
                             {new Date(room.created_at).toLocaleString()}
                           </span>
-                        </span>
-                        <span className="shrink-0 text-xs text-accent">Open</span>
-                      </button>
-                    ))
+                        </button>
+                        <div className="mt-4 flex items-center justify-between border-t border-slate-800 pt-3">
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/${room.room_id}`)}
+                            className="text-xs font-semibold text-accent"
+                          >
+                            Open
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRoom(room.room_id, room.name)}
+                            className="text-xs font-semibold text-red-300 opacity-80 hover:opacity-100"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    </div>
                   )}
-                </div>
+              </div>
               </div>
             </div>
           )}
@@ -354,35 +404,12 @@ function joinPath(parentPath, name) {
   return parentPath ? `${parentPath}/${name}` : name
 }
 
-function collectDescendantIds(fileTree, id) {
-  const collected = new Set([id])
-  let changed = true
-  while (changed) {
-    changed = false
-    fileTree.forEach((entry) => {
-      if (entry.parentId && collected.has(entry.parentId) && !collected.has(entry.id)) {
-        collected.add(entry.id)
-        changed = true
-      }
-    })
-  }
-  return collected
-}
-
-function createDefaultFile() {
-  return {
-    id: crypto.randomUUID(),
-    name: 'main.py',
-    path: 'main.py',
-    parentId: ROOT_ID,
-    languageId: 71,
-    type: 'file',
-  }
-}
-
 function ExplorerPanel({
   fileTree,
   activeFileId,
+  activeUsersByFile = {},
+  awarenessClientId = null,
+  importing = false,
   onSelectFile,
   onAddFile,
   onAddFolder,
@@ -427,6 +454,9 @@ function ExplorerPanel({
       const selectedFolder = entry.id === selectedFolderId
       const folder = entry.type === 'folder'
       const children = folder && entry.expanded ? renderEntries(entry.id, depth + 1) : null
+      const editingUsers = (activeUsersByFile[entry.id] || []).filter(
+        (editingUser) => editingUser.client_id !== awarenessClientId,
+      )
 
       return (
         <li key={entry.id}>
@@ -471,8 +501,18 @@ function ExplorerPanel({
                 <span className="truncate">{entry.name}</span>
               )}
             </button>
-            <span className="px-2 py-1 text-xs text-slate-600">
-              {active || selectedFolder ? 'selected' : ''}
+            <span className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600">
+              {editingUsers.slice(0, 3).map((editingUser) => (
+                <span
+                  key={editingUser.client_id}
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-semibold text-slate-950"
+                  style={{ backgroundColor: editingUser.color || '#8ab4f8' }}
+                  title={`${editingUser.name} is editing`}
+                >
+                  {editingUser.name?.charAt(0)?.toUpperCase() || '?'}
+                </span>
+              ))}
+              {editingUsers.length > 3 ? `+${editingUsers.length - 3}` : active || selectedFolder ? 'selected' : ''}
             </span>
           </div>
           {children && <ul className="space-y-1">{children}</ul>}
@@ -490,9 +530,23 @@ function ExplorerPanel({
         </div>
       </div>
       <div className="flex gap-2 px-3 py-2 border-b border-slate-700/50">
-        <button type="button" onClick={() => inputRef.current?.click()} className="flex-1 px-2 py-1.5 text-xs rounded-lg bg-slate-850 text-slate-400 border border-slate-700/50 hover:text-accent hover:border-accent/30 transition-all">Import</button>
-        <button type="button" onClick={onExport} className="flex-1 px-2 py-1.5 text-xs rounded-lg bg-slate-850 text-slate-400 border border-slate-700/50 hover:text-accent hover:border-accent/30 transition-all">Download</button>
-        <input ref={inputRef} type="file" multiple className="hidden" onChange={onImport} />
+        <button
+          type="button"
+          disabled={importing}
+          onClick={() => inputRef.current?.click()}
+          className="flex-1 px-2 py-1.5 text-xs rounded-lg bg-slate-850 text-slate-400 border border-slate-700/50 hover:text-accent hover:border-accent/30 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {importing ? 'Importing…' : 'Import'}
+        </button>
+        <button
+          type="button"
+          disabled={importing}
+          onClick={onExport}
+          className="flex-1 px-2 py-1.5 text-xs rounded-lg bg-slate-850 text-slate-400 border border-slate-700/50 hover:text-accent hover:border-accent/30 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Download
+        </button>
+        <input ref={inputRef} type="file" multiple className="hidden" onChange={onImport} disabled={importing} />
       </div>
       {selectedEntry && (
         <div className="px-3 py-2 border-b border-slate-700/50 bg-slate-950/40">
@@ -520,19 +574,51 @@ function ExplorerPanel({
         </div>
       )}
       <div className="flex-1 p-3 overflow-auto" onClick={() => onSelectFolder(ROOT_ID)}>
-        <ul className="space-y-1 text-sm" onClick={(event) => event.stopPropagation()}>
-          {renderEntries()}
-        </ul>
+        {fileTree.length === 0 ? (
+          <p className="px-2 py-6 text-center text-xs text-slate-500">No files yet. Add a file or folder to get started.</p>
+        ) : (
+          <ul className="space-y-1 text-sm" onClick={(event) => event.stopPropagation()}>
+            {renderEntries()}
+          </ul>
+        )}
       </div>
     </div>
   )
 }
 
-function EditorPanel({ getCodeRef, setFileContentRef, getAllFilesContentRef, fileTree, activeFile, onLanguageChange }) {
+function EmptyWorkspacePanel({ onAddFile, onAddFolder }) {
+  return (
+    <div className="panel flex flex-1 min-h-0 flex-col items-center justify-center gap-4 p-8 text-center shadow-glow">
+      <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-slate-700/60 bg-slate-850 text-xl font-bold text-accent">
+        &lt;/&gt;
+      </div>
+      <div>
+        <h2 className="text-base font-semibold text-slate-100">No files in this workspace</h2>
+        <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+          Create a file or import a folder to start editing.
+        </p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        <button type="button" onClick={onAddFile} className="rounded-lg border border-accent/30 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent hover:bg-accent/25">
+          + File
+        </button>
+        <button type="button" onClick={onAddFolder} className="rounded-lg border border-slate-700/60 bg-slate-850 px-4 py-2 text-sm font-semibold text-slate-300 hover:border-accent/30">
+          + Folder
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function EditorPanel({ getCodeRef, setFileContentRef, getAllFilesContentRef, activeFile, onLanguageChange, crdt }) {
   const { isAuthenticated, setShowLogin } = useAuth()
   const [running, setRunning] = useState(false)
   const [result, setResult] = useState(null)
-  const selectedLanguage = resolveLanguage(activeFile.languageId)
+  const selectedLanguage = resolveLanguage(activeFile?.languageId ?? 71)
+
+  if (!activeFile) {
+    return null
+  }
 
   const handleRun = async (stdin) => {
     if (!isAuthenticated) {
@@ -573,7 +659,7 @@ function EditorPanel({ getCodeRef, setFileContentRef, getAllFilesContentRef, fil
         languageId={activeFile.languageId}
         onLanguageChange={onLanguageChange}
         activeFileId={activeFile.id}
-        fileTree={fileTree}
+        crdt={crdt}
         getCodeRef={getCodeRef}
         setFileContentRef={setFileContentRef}
         getAllFilesContentRef={getAllFilesContentRef}
@@ -585,13 +671,56 @@ function EditorPanel({ getCodeRef, setFileContentRef, getAllFilesContentRef, fil
 }
 
 function Workspace({ getCodeRef, setFileContentRef, getAllFilesContentRef, workspaceName }) {
-  const [fileTree, setFileTree] = useState([
-    { id: DEFAULT_FILE_ID, name: 'main.py', path: 'main.py', parentId: ROOT_ID, languageId: 71, type: 'file' },
-  ])
+  const { send, connected, addMessageListener } = useRoom()
+  const { user } = useAuth()
+  const initialFileTree = useMemo(
+    () => [
+      {
+        id: DEFAULT_FILE_ID,
+        name: 'main.py',
+        path: 'main.py',
+        parentId: ROOT_ID,
+        languageId: 71,
+        type: 'file',
+        content: DEFAULT_EDITOR_CONTENT,
+      },
+    ],
+    [],
+  )
   const [activeFileId, setActiveFileId] = useState(DEFAULT_FILE_ID)
   const [selectedFolderId, setSelectedFolderId] = useState(ROOT_ID)
+  const [importing, setImporting] = useState(false)
+  const crdt = useCRDT({
+    send,
+    addMessageListener,
+    connected,
+    initialFileTree,
+    activeFileId,
+    initialWorkspaceName: workspaceName,
+    user,
+  })
+  const { fileTree } = crdt
   const activeFile = fileTree.find((file) => file.id === activeFileId) ?? fileTree.find((file) => file.type !== 'folder')
   const selectedLanguage = resolveLanguage(activeFile?.languageId ?? 71)
+
+  useEffect(() => {
+    if (fileTree.length === 0) {
+      if (activeFileId) {
+        setActiveFileId('')
+      }
+      return
+    }
+    if (activeFileId && fileTree.some((entry) => entry.id === activeFileId)) {
+      return
+    }
+    setActiveFileId(fileTree.find((entry) => entry.type !== 'folder')?.id ?? '')
+  }, [activeFileId, fileTree])
+
+  useEffect(() => {
+    if (selectedFolderId && !fileTree.some((entry) => entry.id === selectedFolderId)) {
+      setSelectedFolderId(ROOT_ID)
+    }
+  }, [fileTree, selectedFolderId])
 
   const getFolderPath = (folderId) => {
     if (!folderId) {
@@ -631,17 +760,14 @@ function Workspace({ getCodeRef, setFileContentRef, getAllFilesContentRef, works
     const id = crypto.randomUUID()
     const parentPath = getFolderPath(selectedFolderId)
     const name = uniqueChildName(selectedFolderId, 'untitled.py')
-    setFileTree((prev) => [
-      ...prev,
-      {
-        id,
-        name,
-        path: joinPath(parentPath, name),
-        parentId: selectedFolderId,
-        languageId: getLanguageIdFromName(name),
-        type: 'file',
-      },
-    ])
+    crdt.upsertFileEntry({
+      id,
+      name,
+      path: joinPath(parentPath, name),
+      parentId: selectedFolderId,
+      languageId: getLanguageIdFromName(name),
+      type: 'file',
+    })
     setActiveFileId(id)
   }
 
@@ -649,150 +775,154 @@ function Workspace({ getCodeRef, setFileContentRef, getAllFilesContentRef, works
     const parentPath = getFolderPath(selectedFolderId)
     const name = uniqueChildName(selectedFolderId, 'folder')
     const id = crypto.randomUUID()
-    setFileTree((prev) => [
-      ...prev,
-      {
-        id,
-        name,
-        path: joinPath(parentPath, name),
-        parentId: selectedFolderId,
-        type: 'folder',
-        expanded: true,
-      },
-    ])
+    crdt.upsertFileEntry({
+      id,
+      name,
+      path: joinPath(parentPath, name),
+      parentId: selectedFolderId,
+      type: 'folder',
+      expanded: true,
+    })
     setSelectedFolderId(id)
   }
 
   const renameItem = (id, name) => {
-    setFileTree((prev) => {
-      const current = prev.find((entry) => entry.id === id)
-      if (!current) {
-        return prev
-      }
-      const parentPath = prev.find((entry) => entry.id === current.parentId)?.path ?? ''
-      const newPath = joinPath(parentPath, name)
-      const renamed = prev.map((file) =>
-        file.id === id
-          ? {
-              ...file,
-              name,
-              path: newPath,
-              languageId: file.type === 'file' ? getLanguageIdFromName(name) : file.languageId,
-            }
-          : file,
-      )
-      return current.type === 'folder'
-        ? updateDescendantPaths(renamed, id, current.path, newPath)
-        : renamed
-    })
+    const current = fileTree.find((entry) => entry.id === id)
+    if (!current) {
+      return
+    }
+    const parentPath = fileTree.find((entry) => entry.id === current.parentId)?.path ?? ''
+    const newPath = joinPath(parentPath, name)
+    const renamed = fileTree.map((file) =>
+      file.id === id
+        ? {
+            ...file,
+            name,
+            path: newPath,
+            languageId: file.type === 'file' ? getLanguageIdFromName(name) : file.languageId,
+          }
+        : file,
+    )
+    const next = current.type === 'folder'
+      ? updateDescendantPaths(renamed, id, current.path, newPath)
+      : renamed
+    crdt.batchUpdateEntries(next)
   }
 
   const updateLanguage = (languageId) => {
-    setFileTree((prev) => prev.map((file) => file.id === activeFile.id ? { ...file, languageId } : file))
+    if (!activeFile) {
+      return
+    }
+    crdt.updateFileEntry(activeFile.id, { languageId })
   }
 
   const toggleFolder = (id) => {
-    setFileTree((prev) => prev.map((entry) => entry.id === id ? { ...entry, expanded: !entry.expanded } : entry))
+    const entry = fileTree.find((item) => item.id === id)
+    if (entry) {
+      crdt.updateFileEntry(id, { expanded: !entry.expanded })
+    }
   }
 
   const deleteItem = (id) => {
-    setFileTree((prev) => {
-      const ids = collectDescendantIds(prev, id)
-      let next = prev.filter((entry) => !ids.has(entry.id))
-      if (!next.some((entry) => entry.type !== 'folder')) {
-        const fallback = createDefaultFile()
-        next = [fallback]
-        setActiveFileId(fallback.id)
-        setSelectedFolderId(ROOT_ID)
-        return next
-      }
-      if (ids.has(activeFileId)) {
-        const fallback = next.find((entry) => entry.type !== 'folder')
-        setActiveFileId(fallback?.id ?? '')
-      }
-      if (selectedFolderId && ids.has(selectedFolderId)) {
-        setSelectedFolderId(ROOT_ID)
-      }
-      return next
-    })
+    const ids = crdt.deleteEntry(id)
+    if (selectedFolderId && ids.has(selectedFolderId)) {
+      setSelectedFolderId(ROOT_ID)
+    }
   }
 
   const importProject = async (event) => {
     const files = Array.from(event.target.files || [])
-    const textFiles = files.filter((file) => file.type.startsWith('text/') || /\.(js|jsx|ts|tsx|py|java|cpp|c\+\+|cc|cxx|hpp|c|h|rs|go|rb|cs|php|swift|kt|kts|r|dart|scala|sc|sh|bash|sql|md|json|css|html)$/i.test(file.name))
-    const folderEntries = []
-    const folderByPath = new Map(
-      fileTree
-        .filter((entry) => entry.type === 'folder')
-        .map((entry) => [entry.path, entry.id]),
+    event.target.value = ''
+
+    if (!files.length) {
+      return
+    }
+
+    const textFiles = files.filter(
+      (file) =>
+        file.type.startsWith('text/')
+        || /\.(js|jsx|ts|tsx|py|java|cpp|c\+\+|cc|cxx|hpp|c|h|rs|go|rb|cs|php|swift|kt|kts|r|dart|scala|sc|sh|bash|sql|md|json|css|html)$/i.test(
+          file.name,
+        ),
     )
-    const parentPath = getFolderPath(selectedFolderId)
-    const parentId = selectedFolderId
-    const imported = []
 
-    for (const file of textFiles) {
-      const rawPath = file.webkitRelativePath || file.name
-      const parts = rawPath.split('/').filter(Boolean)
-      const fileName = parts.pop()
-      let currentParentId = parentId
-      let currentPath = parentPath
+    if (!textFiles.length) {
+      return
+    }
 
-      for (const part of parts) {
-        currentPath = joinPath(currentPath, part)
-        if (!folderByPath.has(currentPath)) {
-          const folder = {
-            id: crypto.randomUUID(),
-            name: part,
-            path: currentPath,
-            parentId: currentParentId,
-            type: 'folder',
-            expanded: true,
+    setImporting(true)
+
+    try {
+      const folderEntries = []
+      const fileEntries = []
+      const contentsById = {}
+      const folderByPath = new Map(
+        fileTree.filter((entry) => entry.type === 'folder').map((entry) => [entry.path, entry.id]),
+      )
+      const parentPath = getFolderPath(selectedFolderId)
+      const parentId = selectedFolderId
+      const existingPaths = new Set(fileTree.map((entry) => entry.path))
+
+      for (let index = 0; index < textFiles.length; index += 1) {
+        const file = textFiles[index]
+        const rawPath = file.webkitRelativePath || file.name
+        const parts = rawPath.split('/').filter(Boolean)
+        const fileName = parts.pop()
+        let currentParentId = parentId
+        let currentPath = parentPath
+
+        for (const part of parts) {
+          currentPath = joinPath(currentPath, part)
+          if (!folderByPath.has(currentPath)) {
+            const folder = {
+              id: crypto.randomUUID(),
+              name: part,
+              path: currentPath,
+              parentId: currentParentId,
+              type: 'folder',
+              expanded: true,
+            }
+            folderByPath.set(currentPath, folder.id)
+            folderEntries.push(folder)
+            existingPaths.add(currentPath)
           }
-          folderByPath.set(currentPath, folder.id)
-          folderEntries.push(folder)
+          currentParentId = folderByPath.get(currentPath)
         }
-        currentParentId = folderByPath.get(currentPath)
+
+        let path = joinPath(currentPath, fileName)
+        let name = fileName
+        if (existingPaths.has(path)) {
+          name = uniqueChildName(currentParentId, fileName)
+          path = joinPath(currentPath, name)
+        }
+        existingPaths.add(path)
+
+        const id = crypto.randomUUID()
+        contentsById[id] = await file.text()
+        fileEntries.push({
+          id,
+          name,
+          path,
+          parentId: currentParentId,
+          languageId: getLanguageIdFromName(name),
+          type: 'file',
+        })
+
+        if (index % 15 === 14) {
+          await new Promise((resolve) => window.setTimeout(resolve, 0))
+        }
       }
 
-      const id = crypto.randomUUID()
-      const content = await file.text()
-      imported.push({
-        id,
-        name: fileName,
-        path: joinPath(currentPath, fileName),
-        parentId: currentParentId,
-        content,
-        languageId: getLanguageIdFromName(fileName),
-        type: 'file',
-      })
-    }
+      const entries = [...folderEntries, ...fileEntries]
+      await crdt.importEntriesInBatches(entries, contentsById)
 
-    if (imported.length) {
-      setFileTree((prev) => {
-        const existingPaths = new Set(prev.map((entry) => entry.path))
-        const nextFolders = folderEntries.filter((entry) => {
-          if (existingPaths.has(entry.path)) {
-            return false
-          }
-          existingPaths.add(entry.path)
-          return true
-        })
-        const nextFiles = imported.map(({ content, ...file }) => {
-          let path = file.path
-          let name = file.name
-          if (existingPaths.has(path)) {
-            name = uniqueChildName(file.parentId, file.name)
-            path = joinPath(prev.find((entry) => entry.id === file.parentId)?.path ?? '', name)
-          }
-          existingPaths.add(path)
-          return { ...file, name, path }
-        })
-        return [...prev, ...nextFolders, ...nextFiles]
-      })
-      imported.forEach((file) => setFileContentRef.current(file.id, file.content))
-      setActiveFileId(imported[0].id)
+      const firstImportedFile = fileEntries[0]
+      if (firstImportedFile) {
+        setActiveFileId(firstImportedFile.id)
+      }
+    } finally {
+      setImporting(false)
     }
-    event.target.value = ''
   }
 
   const exportWorkspace = async () => {
@@ -812,17 +942,16 @@ function Workspace({ getCodeRef, setFileContentRef, getAllFilesContentRef, works
     URL.revokeObjectURL(url)
   }
 
-  if (!activeFile) {
-    return null
-  }
-
   return (
     <ThreeColumnLayout
-      workspaceName={workspaceName}
+      workspaceName={crdt.workspaceName}
       leftPanel={
         <ExplorerPanel
           fileTree={fileTree}
           activeFileId={activeFileId}
+          activeUsersByFile={crdt.activeUsersByFile}
+          awarenessClientId={crdt.awarenessClientId}
+          importing={importing}
           onSelectFile={setActiveFileId}
           onAddFile={addFile}
           onAddFolder={addFolder}
@@ -836,20 +965,24 @@ function Workspace({ getCodeRef, setFileContentRef, getAllFilesContentRef, works
         />
       }
       centerPanel={
-        <EditorPanel
-          getCodeRef={getCodeRef}
-          setFileContentRef={setFileContentRef}
-          getAllFilesContentRef={getAllFilesContentRef}
-          fileTree={fileTree}
-          activeFile={activeFile}
-          onLanguageChange={updateLanguage}
-        />
+        activeFile ? (
+          <EditorPanel
+            getCodeRef={getCodeRef}
+            setFileContentRef={setFileContentRef}
+            getAllFilesContentRef={getAllFilesContentRef}
+            activeFile={activeFile}
+            onLanguageChange={updateLanguage}
+            crdt={crdt}
+          />
+        ) : (
+          <EmptyWorkspacePanel onAddFile={addFile} onAddFolder={addFolder} />
+        )
       }
       rightPanel={
         <ChatSidebar
           getCodeRef={getCodeRef}
           language={selectedLanguage.monaco}
-          fileName={activeFile.name}
+          fileName={activeFile?.name || 'No file selected'}
         />
       }
     />
@@ -858,10 +991,36 @@ function Workspace({ getCodeRef, setFileContentRef, getAllFilesContentRef, works
 
 function WorkspaceRoute({ backendStatus }) {
   const { roomId } = useParams()
+  const { isAuthenticated } = useAuth()
   const getCodeRef = useRef(() => '')
   const setFileContentRef = useRef(() => {})
   const getAllFilesContentRef = useRef(() => ({}))
-  const workspaceName = localStorage.getItem(`code_collab_workspace_${roomId}`) || 'Untitled Workspace'
+  const [workspaceName, setWorkspaceName] = useState(
+    () => localStorage.getItem(`code_collab_workspace_${roomId}`) || 'Untitled Workspace',
+  )
+
+  useEffect(() => {
+    if (!roomId) {
+      return
+    }
+    if (!isAuthenticated) {
+      sessionStorage.setItem('code_collab_auth_next', `/${roomId}`)
+    }
+  }, [roomId, isAuthenticated])
+
+  useEffect(() => {
+    if (!roomId) {
+      return
+    }
+    fetchRoom(roomId)
+      .then((room) => {
+        setWorkspaceName(room.name)
+        localStorage.setItem(`code_collab_workspace_${roomId}`, room.name)
+      })
+      .catch(() => {
+        setWorkspaceName(localStorage.getItem(`code_collab_workspace_${roomId}`) || 'Untitled Workspace')
+      })
+  }, [roomId])
 
   if (!roomId) {
     return <Navigate to="/" replace />

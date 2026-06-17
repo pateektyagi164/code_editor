@@ -15,14 +15,12 @@ export function usePresence({ addMessageListener, connected }) {
       if (!data.length || data[0] !== MSG_PRESENCE) {
         return
       }
-
       try {
-        const json = JSON.parse(new TextDecoder().decode(data.slice(1)))
-        if (Array.isArray(json.users)) {
-          setActiveUsers(json.users)
-        }
+        const payload = new TextDecoder().decode(data.slice(1))
+        const parsed = JSON.parse(payload)
+        setActiveUsers(Array.isArray(parsed.users) ? parsed.users : [])
       } catch {
-        // ignore malformed presence payloads
+        setActiveUsers([])
       }
     })
 

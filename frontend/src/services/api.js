@@ -8,9 +8,29 @@ const api = axios.create({
 })
 
 let accessToken = null
-let refreshPromise = null
+let isRefreshing = false
+let failedQueue = []
 const AUTH_FLAG = 'code_collab_auth'
-const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:8000'
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || ''
+
+function getApiOrigin() {
+  if (API_ORIGIN) {
+    return API_ORIGIN.replace(/\/$/, '')
+  }
+  const hostname = window.location.hostname || 'localhost'
+  return `${window.location.protocol}//${hostname}:8000`
+}
+
+function processQueue(error, token = null) {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error)
+    } else {
+      resolve(token)
+    }
+  })
+  failedQueue = []
+}
 
 export function setAccessToken(token) {
   accessToken = token
@@ -28,15 +48,6 @@ export function clearAccessToken() {
   localStorage.removeItem(AUTH_FLAG)
 }
 
-function getCookie(name) {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
-  return match ? decodeURIComponent(match[1]) : null
-}
-
-function clearCookie(name) {
-  document.cookie = `${name}=; path=/; max-age=0`
-}
-
 api.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`
@@ -50,27 +61,40 @@ api.interceptors.response.use(
     const original = error.config
     const requestUrl = original?.url ?? ''
 
-    if (requestUrl.includes('/auth/refresh')) {
+    if (requestUrl.includes('/auth/refresh') || requestUrl.includes('/auth/bootstrap')) {
       clearAccessToken()
       return Promise.reject(error)
     }
 
-    if (error.response?.status === 401 && !original._retry && accessToken) {
+    if (error.response?.status === 401 && original && !original._retry && localStorage.getItem(AUTH_FLAG)) {
       original._retry = true
 
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        }).then((token) => {
+          if (token) {
+            original.headers.Authorization = `Bearer ${token}`
+          }
+          return api(original)
+        })
+      }
+
+      isRefreshing = true
       try {
-        if (!refreshPromise) {
-          refreshPromise = api.post('/auth/refresh').finally(() => {
-            refreshPromise = null
-          })
-        }
-        const { data } = await refreshPromise
+        const { data } = await api.post('/auth/refresh')
         setAccessToken(data.access_token)
-        original.headers.Authorization = `Bearer ${data.access_token}`
+        processQueue(null, data.access_token)
+        if (data.access_token) {
+          original.headers.Authorization = `Bearer ${data.access_token}`
+        }
         return api(original)
-      } catch {
+      } catch (refreshError) {
         clearAccessToken()
-        return Promise.reject(error)
+        processQueue(refreshError, null)
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
 
@@ -78,21 +102,28 @@ api.interceptors.response.use(
   },
 )
 
-export async function bootstrapAccessToken() {
-  const cookieToken = getCookie('access_token')
-  if (cookieToken) {
-    setAccessToken(cookieToken)
-    clearCookie('access_token')
-    return cookieToken
-  }
-
-  if (!localStorage.getItem(AUTH_FLAG)) {
+export async function bootstrapAccessToken({ forceRefresh = false } = {}) {
+  if (!forceRefresh && !localStorage.getItem(AUTH_FLAG)) {
     return null
   }
 
   try {
-    const { data } = await api.post('/auth/refresh')
-    setAccessToken(data.access_token)
+    let data
+    try {
+      const response = await api.post('/auth/bootstrap')
+      data = response.data
+    } catch (error) {
+      if (error.response?.status !== 404) {
+        throw error
+      }
+      const response = await api.post('/auth/refresh')
+      data = response.data
+    }
+    if (data.access_token) {
+      setAccessToken(data.access_token)
+    } else if (data.authenticated) {
+      localStorage.setItem(AUTH_FLAG, '1')
+    }
     return data.access_token
   } catch {
     clearAccessToken()
@@ -106,9 +137,6 @@ export async function fetchAuthProviders() {
 }
 
 export async function fetchCurrentUser() {
-  if (!accessToken) {
-    return null
-  }
   const { data } = await api.get('/auth/me')
   return data
 }
@@ -120,17 +148,79 @@ export async function logoutUser() {
 
 export function getOAuthLoginUrl(provider, nextPath = window.location.pathname) {
   const next = `${nextPath}${window.location.search || ''}`
-  return `${API_ORIGIN}/api/v1/auth/${provider}/login?next=${encodeURIComponent(next)}`
+  return `${getApiOrigin()}/api/v1/auth/${provider}/login?next=${encodeURIComponent(next)}`
 }
 
 export async function createRoom({ name = 'Untitled Workspace' } = {}) {
-  const { data } = await api.post('/rooms', { name })
-  return data
+  try {
+    const { data } = await api.post('/rooms', { name })
+    return {
+      room_id: data.room_id,
+      name: data.name || name,
+      created_at: data.created_at || new Date().toISOString(),
+    }
+  } catch (error) {
+    if (![404, 405, 307, 308].includes(error.response?.status)) {
+      if (error.response?.status && error.response.status >= 500) {
+        return {
+          room_id: crypto.randomUUID(),
+          name,
+          created_at: new Date().toISOString(),
+          local_only: true,
+        }
+      }
+      throw error
+    }
+    try {
+      const { data } = await api.post('/rooms/', { name })
+      return {
+        room_id: data.room_id,
+        name: data.name || name,
+        created_at: data.created_at || new Date().toISOString(),
+      }
+    } catch {
+      return {
+        room_id: crypto.randomUUID(),
+        name,
+        created_at: new Date().toISOString(),
+        local_only: true,
+      }
+    }
+  }
 }
 
 export async function fetchRooms() {
-  const { data } = await api.get('/rooms')
+  try {
+    const { data } = await api.get('/rooms')
+    return data
+  } catch (error) {
+    if (![404, 405, 307, 308].includes(error.response?.status)) {
+      throw error
+    }
+    try {
+      const { data } = await api.get('/rooms/')
+      return data
+    } catch (retryError) {
+      if ([404, 405].includes(retryError.response?.status)) {
+        return []
+      }
+      throw retryError
+    }
+  }
+}
+
+export async function fetchRoom(roomId) {
+  const { data } = await api.get(`/rooms/${roomId}`)
   return data
+}
+
+export async function updateRoom(roomId, payload) {
+  const { data } = await api.patch(`/rooms/${roomId}`, payload)
+  return data
+}
+
+export async function deleteRoom(roomId) {
+  await api.delete(`/rooms/${roomId}`)
 }
 
 export async function runCode({ sourceCode, languageId = 71, language = 'python', stdin = null }) {

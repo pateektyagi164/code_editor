@@ -1,3 +1,5 @@
 export const MSG_PRESENCE = 0x03
 export const MSG_PING = 0x04
 export const MSG_PONG = 0x05
+export const MSG_AWARENESS = 0x06
+export const MSG_SNAPSHOT = 0x07

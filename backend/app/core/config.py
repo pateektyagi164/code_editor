@@ -2,6 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -19,27 +20,31 @@ class Settings(BaseSettings):
     app_env: str = "development"
     debug: bool = True
 
-    database_url: str = "postgresql+asyncpg://codecollab:codecollab@localhost:5435/codecollab"
-    redis_url: str = "redis://localhost:6380/0"
+    POSTGRES_USER=str
+    POSTGRES_PASSWORD=str
+    POSTGRES_DB=str
+    database_url: str 
+    redis_url: str 
 
-    secret_key: str = "change-me-to-a-random-secret-key-in-production"
+    secret_key: str
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
+    cookie_secure_override: bool | None = Field(default=None, validation_alias="COOKIE_SECURE")
 
-    frontend_url: str = "http://localhost:5173"
-    cors_origins: List[str] = ["http://localhost:5173"]
+    frontend_url: str 
+    cors_origins: List[str] 
 
     google_client_id: str = ""
     google_client_secret: str = ""
-    google_redirect_uri: str = "http://localhost:8000/api/v1/auth/google/callback"
+    google_redirect_uri: str 
 
     github_client_id: str = ""
     github_client_secret: str = ""
-    github_redirect_uri: str = "http://localhost:8000/api/v1/auth/github/callback"
+    github_redirect_uri: str 
 
     # Public Judge0 CE works out of the box on Windows/macOS.
     # For self-hosted: set to http://localhost:2358 and run `docker compose --profile judge0 up -d`
-    judge0_api_url: str = "https://ce.judge0.com"
+    judge0_api_url: str 
     judge0_auth_token: str = ""
     judge0_timeout_seconds: float = 60.0
     execution_max_source_bytes: int = 65536
@@ -53,6 +58,8 @@ class Settings(BaseSettings):
 
     @property
     def cookie_secure(self) -> bool:
+        if self.cookie_secure_override is not None:
+            return self.cookie_secure_override
         return self.app_env == "production"
 
 

@@ -2,7 +2,6 @@ import Editor from '@monaco-editor/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext.jsx'
 import { useRoom } from '../../contexts/RoomContext.jsx'
-import { useCRDT } from '../../hooks/useCRDT.js'
 
 export const LANGUAGE_OPTIONS = [
   { id: 71, label: 'Python', monaco: 'python', icon: 'PY' },
@@ -42,28 +41,31 @@ export default function MonacoWrapper({
   languageId = 71,
   onLanguageChange,
   activeFileId = 'main',
-  fileTree = [],
-  initialContent = DEFAULT_EDITOR_CONTENT,
+  crdt,
   getCodeRef,
   setFileContentRef,
   getAllFilesContentRef,
   executionResult,
 }) {
-  const { user, isAuthenticated, setShowLogin } = useAuth()
-  const { roomId, send, connected, addMessageListener } = useRoom()
-  const { bindEditor, getContent, setFileContent, getAllFilesContent } = useCRDT({
-    send,
-    addMessageListener,
-    connected,
+  const { isAuthenticated, setShowLogin } = useAuth()
+  const { roomId, connected } = useRoom()
+  const {
+    bindEditor,
+    getContent,
+    setFileContent,
+    getAllFilesContent,
     fileTree,
-    activeFileId,
-    initialContent,
-    user,
-  })
+    remoteUpdateVersion,
+  } = crdt
   const [cursor, setCursor] = useState({ line: 1, column: 1 })
+  const [editorReady, setEditorReady] = useState(false)
   const selectedLanguage = resolveLanguage(languageId)
   const editorRef = useRef(null)
   const monacoRef = useRef(null)
+  const modelsRef = useRef(new Map())
+  const activeFileIdRef = useRef(activeFileId)
+
+  activeFileIdRef.current = activeFileId
 
   useEffect(() => {
     if (getCodeRef) {
@@ -76,6 +78,62 @@ export default function MonacoWrapper({
       getAllFilesContentRef.current = getAllFilesContent
     }
   }, [getCodeRef, setFileContentRef, getAllFilesContentRef, getContent, setFileContent, getAllFilesContent])
+
+  const disposeModel = useCallback((id) => {
+    const model = modelsRef.current.get(id)
+    if (model) {
+      model.dispose()
+      modelsRef.current.delete(id)
+    }
+  }, [])
+
+  useEffect(() => {
+    const editor = editorRef.current
+    const monaco = monacoRef.current
+    if (!editorReady || !editor || !monaco || !activeFileId) {
+      return
+    }
+
+    disposeModel(activeFileId)
+
+    const model = monaco.editor.createModel(
+      getContent(activeFileId),
+      selectedLanguage.monaco,
+      monaco.Uri.parse(`inmemory://model/${activeFileId}`),
+    )
+    modelsRef.current.set(activeFileId, model)
+
+    editor.setModel(model)
+    bindEditor(editor, model)
+  }, [editorReady, activeFileId, selectedLanguage.monaco, bindEditor, getContent, disposeModel])
+
+  useEffect(() => {
+    if (!editorReady) {
+      return
+    }
+
+    const currentActiveId = activeFileIdRef.current
+    for (const [id, model] of modelsRef.current) {
+      if (id === currentActiveId) {
+        continue
+      }
+      const content = getContent(id)
+      if (model.getValue() !== content) {
+        model.setValue(content)
+      }
+    }
+  }, [remoteUpdateVersion, fileTree, editorReady, getContent])
+
+  useEffect(() => {
+    const activeIds = new Set(
+      fileTree.filter((entry) => entry.type !== 'folder').map((entry) => entry.id),
+    )
+    for (const id of modelsRef.current.keys()) {
+      if (!activeIds.has(id)) {
+        disposeModel(id)
+      }
+    }
+  }, [fileTree, disposeModel])
 
   useEffect(() => {
     const editor = editorRef.current
@@ -105,18 +163,30 @@ export default function MonacoWrapper({
     editor.revealLineInCenter(line)
   }, [executionResult, activeFileId])
 
-  const handleMount = useCallback(
-    (editor, monaco) => {
-      editorRef.current = editor
-      monacoRef.current = monaco
-      bindEditor(editor, editor.getModel())
+  const handleMount = useCallback((editor, monaco) => {
+    editorRef.current = editor
+    monacoRef.current = monaco
 
-      editor.onDidChangeCursorPosition(({ position }) => {
-        setCursor({ line: position.lineNumber, column: position.column })
-      })
-    },
-    [bindEditor],
-  )
+    const placeholder = monaco.editor.createModel('', 'plaintext')
+    const defaultModel = editor.getModel()
+    editor.setModel(placeholder)
+    defaultModel?.dispose()
+
+    editor.onDidChangeCursorPosition(({ position }) => {
+      setCursor({ line: position.lineNumber, column: position.column })
+    })
+
+    setEditorReady(true)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      for (const id of modelsRef.current.keys()) {
+        disposeModel(id)
+      }
+      setEditorReady(false)
+    }
+  }, [disposeModel])
 
   return (
     <div className="panel flex flex-col flex-1 min-h-0 shadow-glow">
